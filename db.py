@@ -34,13 +34,25 @@ def get_words_count():
         return curs.fetchall()[0][0]
 
 
+# problem with word contain ' symbol
+# def add_words(words):
+#     with Database() as curs:
+#         _SQL = """INSERT INTO words (word) VALUES"""
+#         for word in words:
+#             if "'" in word:
+#
+#             _SQL = _SQL + " ('" + word + "'), "
+#         _SQL = _SQL[:-2] + ' ON CONFLICT (word) DO NOTHING;'
+#         curs.execute(_SQL)
+
+
 def add_words(words):
     with Database() as curs:
         _SQL = """INSERT INTO words (word) VALUES"""
         for word in words:
-            _SQL = _SQL + " ('" + word + "'), "
-        _SQL = _SQL[:-2] + ' ON CONFLICT (word) DO NOTHING;'
-        print(_SQL)
-        curs.execute(_SQL)
+            if "'" not in word:
+                _SQL = "INSERT INTO words (word) VALUES ('" + word + "') ON CONFLICT (word) DO NOTHING;"
+                curs.execute(_SQL)
+
 
 
