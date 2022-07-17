@@ -47,12 +47,23 @@ def get_words_count():
 
 
 def add_words(words):
-    with Database() as curs:
-        _SQL = """INSERT INTO words (word) VALUES"""
-        for word in words:
-            if "'" not in word:
-                _SQL = "INSERT INTO words (word) VALUES ('" + word + "') ON CONFLICT (word) DO NOTHING;"
-                curs.execute(_SQL)
+    for word in words:
+        add_word(word)
 
+
+def check_word(word):
+    with Database() as curs:
+        _SQL = "SELECT word FROM words WHERE word = '" + word + "';"
+        curs.execute(_SQL)
+        if len(curs.fetchall()) == 0:
+            return False
+        return True
+
+
+def add_word(word):
+    with Database() as curs:
+        if "'" not in word:
+            _SQL = "INSERT INTO words (word) VALUES ('" + word + "') ON CONFLICT (word) DO NOTHING;"
+            curs.execute(_SQL)
 
 
