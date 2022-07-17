@@ -52,12 +52,14 @@ def add_words(words):
 
 
 def check_word(word):
-    with Database() as curs:
-        _SQL = "SELECT word FROM words WHERE word = '" + word + "';"
-        curs.execute(_SQL)
-        if len(curs.fetchall()) == 0:
-            return False
-        return True
+    if "'" not in word:
+        with Database() as curs:
+            _SQL = "SELECT word FROM words WHERE word = '" + word + "';"
+            curs.execute(_SQL)
+            if len(curs.fetchall()) == 0:
+                return False
+            return True
+    return False
 
 
 def add_word(word):

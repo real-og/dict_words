@@ -3,7 +3,7 @@ from LyricParser import LyricsParser
 import time
 
 while True:
-    url = input("Enter url to Genius lyrics: ")
+    url = input("Enter url to Genius lyrics you want to fully insert: ")
     start = time.time()
     count_before = get_words_count()
     words = LyricsParser(url).get_word_list()
