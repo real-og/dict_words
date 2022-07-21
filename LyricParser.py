@@ -16,7 +16,7 @@ class LyricsParser:
         # problem with connected - like "dec--"
         # words = [word.strip(string.punctuation).lower() for word in lyrics.split()]
         for block in self.lyrics_blocks:
-            words = words + re.findall('[’a-zа-яё\']+', block.get_text('\n').lower())
+            words = words + re.findall('[’a-zа-яё\'-]+', block.get_text('\n').lower())
         return words
 
     def get_word_set(self):

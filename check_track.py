@@ -11,7 +11,7 @@ for word in words:
     if check_word(word):
         continue
     print(word)
-    ans = input("y/n")
+    ans = input("y/n\n")
     if ans == 'y':
         add_word(word)
     else:
