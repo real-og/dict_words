@@ -1,5 +1,5 @@
 from db import *
-from LyricParser import LyricsParser
+from LyricsParser import LyricsParser
 import time
 
 while True:

@@ -1,5 +1,5 @@
 from db import *
-from LyricParser import LyricsParser
+from LyricsParser import LyricsParser
 
 url = input("Enter url to Genius lyrics you want to check: ")
 words = LyricsParser(url).get_word_list()
@@ -19,7 +19,3 @@ for word in words:
 
 print('Words to learn:')
 print(unknown)
-
-
-
-
