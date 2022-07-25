@@ -1,3 +1,27 @@
 import os
+import logging
 
-BOT_TOKEN = str(os.environ.get('BOT_TOKEN'))
+from aiogram import Bot, Dispatcher, executor, types
+
+API_TOKEN = str(os.environ.get('BOT_TOKEN'))
+
+
+logging.basicConfig(level=logging.INFO)
+
+
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+
+@dp.message_handler(commands=['start', 'help'])
+async def send_welcome(message: types.Message):
+    await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/сommands для списка всех комманд :)")
+
+@dp.message_handler(commands=['commands'])
+async def send_welcome(message: types.Message):
+    await message.reply("""/add_song - Добавить песню целиком\n/add_word - Добавить слово\n/check_song - Добавить песню проверяя каждое слово\n/check_word - Проверить, если ли слово\n/count - Количество слов в базе\n/commands - Команды""")
+@dp.message_handler()
+async def echo(message: types.Message):
+    await message.answer(message.text)
+
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
