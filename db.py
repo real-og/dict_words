@@ -58,7 +58,6 @@ def check_word(word):
         if len(curs.fetchall()) == 0:
             return False
         return True
-    return False
 
 
 def add_word(word):
