@@ -1,5 +1,8 @@
+import time
 import os
 import logging
+
+from add_track import add_track
 
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -31,16 +34,22 @@ async def execute_command(message: types.Message, state: FSMContext):
     command = data['name']
 
     if command == '/add_song':
-        await message.answer("Добавлено")
+        start = time.time()
+        count_before = db.get_words_count()
+        lenn = add_track(message.text.lower())
+        count_after = db.get_words_count() - count_before
+        await message.answer("Добавлено " + str(count_after) + " новых слов из " + str(lenn) + " возможных за " + str('%.3f' % (time.time() - start)) + " сек")
 
     if command == '/add_word':
+        word = message.text.lower()
+        db.add_word(word)
         await message.answer("Добавлено")
 
     if command == '/check_song':
         pass
 
     if command == '/check_word':
-        word = message.text
+        word = message.text.lower()
         await message.answer(str(db.check_word(word)))
 
 
