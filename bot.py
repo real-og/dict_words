@@ -2,6 +2,8 @@ import time
 import os
 import logging
 
+from keyboards import menu_kb
+
 from add_track import add_track
 from LyricsParser import LyricsParser
 
@@ -33,21 +35,6 @@ class State(StatesGroup):
     command = State()
     check = State()
 
-button_1 = KeyboardButton('Комманды')
-button_2 = KeyboardButton('Добавить трек')
-button_3 = KeyboardButton('Добавить слово')
-button_4 = KeyboardButton('Есть ли слово')
-button_5 = KeyboardButton('Проверить трек')
-button_6 = KeyboardButton('Количество слов')
-
-greet_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-greet_kb.insert(button_1)
-greet_kb.insert(button_2)
-greet_kb.insert(button_3)
-greet_kb.insert(button_4)
-greet_kb.insert(button_5)
-greet_kb.insert(button_6)
-
 
 @dp.message_handler(state=State.command)
 async def execute_command(message: types.Message, state: FSMContext):
@@ -59,13 +46,13 @@ async def execute_command(message: types.Message, state: FSMContext):
         count_before = db.get_words_count()
         lenn = add_track(message.text.lower())
         count_after = db.get_words_count() - count_before
-        await message.answer("Добавлено " + str(count_after) + " новых слов из " + str(lenn) + " возможных за " + str('%.3f' % (time.time() - start)) + " сек", reply_markup=greet_kb)
+        await message.answer("Добавлено " + str(count_after) + " новых слов из " + str(lenn) + " возможных за " + str('%.3f' % (time.time() - start)) + " сек", reply_markup=menu_kb)
         await state.finish()
 
     if command == '/add_word':
         word = message.text.lower()
         db.add_word(word)
-        await message.answer("Добавлено", reply_markup=greet_kb)
+        await message.answer("Добавлено", reply_markup=menu_kb)
         await state.finish()
 
     if command == '/check_song':
@@ -76,7 +63,7 @@ async def execute_command(message: types.Message, state: FSMContext):
 
     if command == '/check_word':
         word = message.text.lower()
-        await message.answer(str(db.check_word(word)), reply_markup=greet_kb)
+        await message.answer(str(db.check_word(word)), reply_markup=menu_kb)
         await state.finish()
 
 @dp.message_handler(state=State.check)
@@ -85,13 +72,14 @@ async def ask_word(message: types.Message, state: FSMContext):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/help для списка всех комманд :)", reply_markup=greet_kb)
+    await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/help для списка всех комманд :)", reply_markup=menu_kb)
 
+@dp.message_handler(regexp='Команды')
 @dp.message_handler(commands=['commands','help'])
 async def send_commands(message: types.Message):
-    await message.reply("""/add_song - Добавить песню целиком\n/add_word - Добавить слово\n/check_song - Добавить песню проверяя каждое слово\n/check_word - Проверить, если ли слово\n/count - Количество слов в базе\n/commands - Команды""", reply_markup=greet_kb)
+    await message.reply("""/add_song - Добавить песню целиком\n/add_word - Добавить слово\n/check_song - Добавить песню проверяя каждое слово\n/check_word - Проверить, если ли слово\n/count - Количество слов в базе\n/commands - Команды""", reply_markup=menu_kb)
 
-
+@dp.message_handler(regexp='Добавить трек')
 @dp.message_handler(commands=['add_song'])
 async def add_song(message: types.Message, state: FSMContext):
     await message.answer("Введите ссылку на genius:")
@@ -105,21 +93,24 @@ async def add_word(message: types.Message, state: FSMContext):
     await State.command.set()
     await state.update_data(name=message.text)
 
+@dp.message_handler(regexp='Проверить трек')
 @dp.message_handler(commands=['check_song'])
 async def check_song(message: types.Message, state: FSMContext):
     await message.answer("Введите ссылку на genius:")
     await State.command.set()
     await state.update_data(name=message.text)
 
+@dp.message_handler(regexp='Есть ли слово')
 @dp.message_handler(commands=['check_word'])
 async def check_wordd(message: types.Message, state: FSMContext):
     await message.answer("Введите слово:")
     await State.command.set()
     await state.update_data(name=message.text)
 
+@dp.message_handler(regexp='Количество слов')
 @dp.message_handler(commands=['count'])
 async def count(message: types.Message, state: FSMContext):
-    await message.answer("В базе " + str(db.get_words_count()) + " слов.", reply_markup=greet_kb)
+    await message.answer("В базе " + str(db.get_words_count()) + " слов.", reply_markup=menu_kb)
 
 
    
