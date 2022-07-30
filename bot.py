@@ -20,24 +20,25 @@ import db
 API_TOKEN = str(os.environ.get('BOT_TOKEN'))
 
 
-logging.basicConfig(level=logging.INFO)
-
-
-bot = Bot(token=API_TOKEN)
+logging.basicConfig(#filename="sample.log",
+                    level=logging.INFO,
+                    #filemode='w',
+                    format='%(asctime)s - %(levelname)s - %(message)s',)
 
 storage = MemoryStorage()
+bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
 
 class State(StatesGroup):
     command = State()
     check = State()
 
-button_1 = KeyboardButton('/commands')
-button_2 = KeyboardButton('/add_track')
-button_3 = KeyboardButton('/add_word')
-button_4 = KeyboardButton('/check_word')
-button_5 = KeyboardButton('/check_track')
-button_6 = KeyboardButton('/count')
+button_1 = KeyboardButton('Комманды')
+button_2 = KeyboardButton('Добавить трек')
+button_3 = KeyboardButton('Добавить слово')
+button_4 = KeyboardButton('Есть ли слово')
+button_5 = KeyboardButton('Проверить трек')
+button_6 = KeyboardButton('Количество слов')
 
 greet_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 greet_kb.insert(button_1)
@@ -82,11 +83,11 @@ async def execute_command(message: types.Message, state: FSMContext):
 async def ask_word(message: types.Message, state: FSMContext):
     pass
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/сommands для списка всех комманд :)", reply_markup=greet_kb)
+    await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/help для списка всех комманд :)", reply_markup=greet_kb)
 
-@dp.message_handler(commands=['commands'])
+@dp.message_handler(commands=['commands','help'])
 async def send_commands(message: types.Message):
     await message.reply("""/add_song - Добавить песню целиком\n/add_word - Добавить слово\n/check_song - Добавить песню проверяя каждое слово\n/check_word - Проверить, если ли слово\n/count - Количество слов в базе\n/commands - Команды""", reply_markup=greet_kb)
 
@@ -97,6 +98,7 @@ async def add_song(message: types.Message, state: FSMContext):
     await State.command.set()
     await state.update_data(name=message.text)
 
+@dp.message_handler(regexp='Добавить слово')
 @dp.message_handler(commands=['add_word'])
 async def add_word(message: types.Message, state: FSMContext):
     await message.answer("Введите слово:")
@@ -123,4 +125,6 @@ async def count(message: types.Message, state: FSMContext):
    
 
 if __name__ == '__main__':
+    print("Starting")
     executor.start_polling(dp, skip_updates=True)
+    
