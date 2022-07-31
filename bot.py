@@ -130,7 +130,7 @@ async def check_track(message: types.Message, state: FSMContext):
     await message.answer("Всего в треке " + str(len(words)) + " слов.")
     new_words = list()
     for word in words:
-        if not db.check_word(word):
+        if not db.check_word(word) and (word not in new_words):
             new_words.append(word)
     if len(new_words) == 0:
         await message.answer("В этом треке все слова знакомы", reply_markup=menu_kb)
