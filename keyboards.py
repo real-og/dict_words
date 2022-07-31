@@ -20,7 +20,7 @@ menu_kb.insert(add_w)
 menu_kb.insert(check_w)
 
 
-choice_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+choice_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
 
 yes = KeyboardButton('Да')
 no = KeyboardButton('Нет')

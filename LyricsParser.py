@@ -7,8 +7,13 @@ class LyricsParser:
 
     def __init__(self, url):
         self.url = url
-        self.page = requests.get(url)
-        self.soup = BeautifulSoup(self.page.text, "html.parser")
+        try:
+            self.page = requests.get(url)
+            self.soup = BeautifulSoup(self.page.text, "html.parser")
+        except Exception as e:
+            print(e)
+            self.page = 'bam'
+            self.soup = BeautifulSoup('bang', "html.parser")
         self.lyrics_blocks = self.soup.findAll(class_="Lyrics__Container-sc-1ynbvzw-6 YYrds")
 
     def get_word_list(self):

@@ -1,14 +1,15 @@
 import psycopg2
+import os
 
 
 class Database(object):
     def __init__(self):
         self.conn = psycopg2.connect(
-            database="words",
-            user="words",
-            password="words",
-            host="127.0.0.1",
-            port="5432"
+            database=str(os.environ.get('database')),
+            user=str(os.environ.get('user')),
+            password=str(os.environ.get('password')),
+            host=str(os.environ.get('host')),
+            port=str(os.environ.get('port'))
         )
         self.curs = self.conn.cursor()
 

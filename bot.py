@@ -62,8 +62,8 @@ async def add_track(message: types.Message, state: FSMContext):
             new_count += 1
             new_words += word + '\n'
             db.add_word(word)
-    await message.answer("Добавлено " + str(new_count) + " слов.\nВот они:")
-    await message.answer(new_words, reply_markup=menu_kb)
+    await message.answer("Добавлено " + str(new_count) + " слов.")
+    await message.answer('Вот они:\n' + new_words, reply_markup=menu_kb)
     await state.finish()
 
 
@@ -135,7 +135,7 @@ async def check_track(message: types.Message, state: FSMContext):
     if len(new_words) == 0:
         await message.answer("В этом треке все слова знакомы", reply_markup=menu_kb)
         await state.finish()
-    await message.answer("Из них незнакомых " + str(len(new_words)) + "\nНажмите Начать, чтобы начать добавление по слову", reply_markup=big_start_kb)
+    await message.answer("Из них незнакомых " + str(len(new_words)) + "\nНажмите Начать, чтобы начать добавление по слову\nДа - знаю\nНет - не знаю.", reply_markup=big_start_kb)
     await state.update_data(words_to_check=new_words)
     await state.update_data(iter=0)
     await state.update_data(words_to_learn=list())
@@ -154,13 +154,16 @@ async def check_(message: types.Message, state: FSMContext):
         db.add_word(new_words[i-1])
     elif message.text.lower() == 'нет':
         to_learn_words.append(new_words[i-1])
+    else:
+        await message.answer('Такого варианта нет, вышли в меню', reply_markup=menu_kb)
+        await state.finish()
+        return
 
     if i < len(new_words):
         await message.answer(new_words[i], reply_markup=choice_kb)
         i += 1
     else:
-        await message.answer('Проверка окончена, слова которые нужно выучить:')
-        await message.answer(str(to_learn_words), reply_markup=menu_kb)
+        await message.answer('Проверка окончена, слова которые нужно выучить:\n' + str(to_learn_words), reply_markup=menu_kb)
         await state.finish()
         return
     await state.update_data(words_to_learn=to_learn_words, iter=i)
