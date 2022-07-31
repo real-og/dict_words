@@ -1,4 +1,6 @@
 # dict_words
+Find a bot in telegram via https://t.me/LyricsMagicBot
+
 Hello, this is telegram bot which may help you expand your English vocabulary listening to music.
 
 The use is simple, you may:
