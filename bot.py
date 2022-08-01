@@ -100,23 +100,6 @@ async def execute_command(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @dp.message_handler(regexp='Проверить трек')
 @dp.message_handler(commands=['check_song'])
 async def add_song(message: types.Message):
@@ -167,22 +150,6 @@ async def check_(message: types.Message, state: FSMContext):
         await state.finish()
         return
     await state.update_data(words_to_learn=to_learn_words, iter=i)
-
-
-
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
 
 
 @dp.message_handler(regexp='Количество слов')
