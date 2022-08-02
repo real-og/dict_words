@@ -9,6 +9,7 @@ requests = "*"
 psycopg2-binary = "*"
 aiogram = "*"
 emoji = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 
