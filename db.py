@@ -108,16 +108,19 @@ def check_word_by_user(id_tg, word):
 def add_word_to_user(id_tg, word):
     with Database() as curs:
         word = word.replace("'", "''").replace("`", "''")
+        if not check_word_by_user(id_tg=id_tg, word=word):
+            add_word(word)
         _SQL = """insert into user_word (user_id, word_id)
                     select users.id, words.id
                     from users inner join words on
-                    words.word = """ + word + """ and users.id_tg = """ + str(id_tg) + """ on conflict do nothing;"""
+                    words.word = '""" + word + """' and users.id_tg = """ + str(id_tg) + """ on conflict do nothing;"""
         curs.execute(_SQL)
 
 def add_user(id_tg):
     with Database() as curs:
-        _SQL = "INSERT INTO users (id_tg) VALUES (" + str(id_tg) + ") ON CONFLICT (id_tg) DO NOTHING;"
-        curs.execute(_SQL)
+        if not check_user(id_tg):
+            _SQL = "INSERT INTO users (id_tg) VALUES (" + str(id_tg) + ");"
+            curs.execute(_SQL)
 
 def check_user(id_tg):
     with Database() as curs:
