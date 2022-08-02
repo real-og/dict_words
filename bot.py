@@ -36,7 +36,7 @@ class State(StatesGroup):
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/help для списка всех комманд :)", reply_markup=menu_kb)
-
+    db.add_user(message.from_user.id)
 
 @dp.message_handler(regexp='Команды')
 @dp.message_handler(commands=['commands','help'])
@@ -58,10 +58,10 @@ async def add_track(message: types.Message, state: FSMContext):
     new_words = ''
     new_count = 0
     for word in words:
-        if not db.check_word(word):
+        if not db.check_word_by_user(id_tg=message.from_user.id, word=word):
             new_count += 1
             new_words += word + '\n'
-            db.add_word(word)
+            db.add_word_to_user(word=word, id_tg=message.from_user.id)
     await message.answer("Добавлено " + str(new_count) + " слов.")
     await message.answer('Вот они:\n' + new_words, reply_markup=menu_kb)
     await state.finish()
@@ -76,10 +76,10 @@ async def add_word(message: types.Message):
 @dp.message_handler(state=State.add_w)
 async def execute_command(message: types.Message, state: FSMContext):
     word = message.text.lower()
-    if db.check_word(word):
+    if db.check_word_by_user(word=word, id_tg=message.from_user.id):
         await message.answer("Это слово уже было", reply_markup=menu_kb)
     else:
-        db.add_word(word)
+        db.add_word_to_user(word=word, id_tg=message.from_user.id)
         await message.answer("Добавлено", reply_markup=menu_kb)
     await state.finish()
 
@@ -93,7 +93,7 @@ async def check_wordd(message: types.Message):
 @dp.message_handler(state=State.check_w)
 async def execute_command(message: types.Message, state: FSMContext):
     word = message.text.lower()
-    if db.check_word(word):
+    if db.check_word_by_user(word=word, id_tg=message.from_user.id):
         await message.answer("Есть", reply_markup=menu_kb)
     else:
         await message.answer("Нет", reply_markup=menu_kb)
@@ -113,7 +113,7 @@ async def check_track(message: types.Message, state: FSMContext):
     await message.answer("Всего в треке " + str(len(words)) + " слов.")
     new_words = list()
     for word in words:
-        if not db.check_word(word) and (word not in new_words):
+        if not db.check_word_by_user(word=word, id_tg=message.from_user.id) and (word not in new_words):
             new_words.append(word)
     if len(new_words) == 0:
         await message.answer("В этом треке все слова знакомы", reply_markup=menu_kb)
@@ -134,7 +134,7 @@ async def check_(message: types.Message, state: FSMContext):
     if message.text.lower() == 'начать':
         pass
     elif message.text.lower() == 'да':
-        db.add_word(new_words[i-1])
+        db.add_word_to_user(word=new_words[i-1], id_tg=message.from_user.id)
     elif message.text.lower() == 'нет':
         to_learn_words.append(new_words[i-1])
     else:
@@ -155,7 +155,7 @@ async def check_(message: types.Message, state: FSMContext):
 @dp.message_handler(regexp='Количество слов')
 @dp.message_handler(commands=['count'])
 async def count(message: types.Message, state: FSMContext):
-    await message.answer("В базе " + str(db.get_words_count()) + " слов.", reply_markup=menu_kb)
+    await message.answer("В базе " + str(db.get_words_count_by_user(id_tg=message.from_user.id)) + " слов.", reply_markup=menu_kb)
 
 
 if __name__ == '__main__':
