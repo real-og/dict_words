@@ -40,8 +40,8 @@ def add_words(words):
     with Database() as curs:
         _SQL = """INSERT INTO words (word) VALUES"""
         for word in words:
-            word = word.replace("'", "''").replace("`", "''")
-            _SQL = _SQL + " ('" + word + "'), "
+            word = word.replace("`", "'")
+            _SQL = _SQL + " ($$" + word + "$$), "
         _SQL = _SQL[:-2] + ' ON CONFLICT (word) DO NOTHING;'
         curs.execute(_SQL)
 
@@ -52,9 +52,9 @@ def add_words(words):
 
 
 def check_word(word):
-    word = word.replace("'", "''").replace("`", "''")
+    word = word.replace("`", "'")
     with Database() as curs:
-        _SQL = "SELECT word FROM words WHERE word = '" + word + "';"
+        _SQL = "SELECT word FROM words WHERE word = $$" + word + "$$;"
         curs.execute(_SQL)
         if len(curs.fetchall()) == 0:
             return False
@@ -63,8 +63,8 @@ def check_word(word):
 
 def add_word(word):
     with Database() as curs:
-        word = word.replace("'", "''").replace("`", "''")
-        _SQL = "INSERT INTO words (word) VALUES ('" + word + "') ON CONFLICT (word) DO NOTHING;"
+        word = word.replace("`", "'")
+        _SQL = "INSERT INTO words (word) VALUES ($$" + word + "$$) ON CONFLICT (word) DO NOTHING;"
         curs.execute(_SQL)
 
 
@@ -75,6 +75,16 @@ def add_word(word):
 
 
 
+
+
+
+def delete_word_by_user(id_tg, word):
+    with Database() as curs:
+        word = word.replace("`", "'")
+        _SQL = """delete from user_word
+                    where user_id = (select id from users where id_tg = """ + str(id_tg) + """)
+                    and word_id = (select id from words where word = $$""" + word + """$$);"""
+        curs.execute(_SQL)
 
 
 
@@ -96,10 +106,10 @@ def get_words_count_by_user(id_tg):
 
 def check_word_by_user(id_tg, word):
     with Database() as curs:
-        word = word.replace("'", "''").replace("`", "''")
+        word = word.replace("`", "'")
         _SQL = """select * from user_word
-                    where user_id = (select id from users where id_tg = """+str(id_tg)+""")
-                    and word_id = (select id from words where word = '"""+word+"""');"""
+                    where user_id = (select id from users where id_tg = """ + str(id_tg) + """)
+                    and word_id = (select id from words where word = $$""" + word + """$$);"""
         curs.execute(_SQL)
         if len(curs.fetchall()) == 0:
             return False
@@ -107,13 +117,13 @@ def check_word_by_user(id_tg, word):
 
 def add_word_to_user(id_tg, word):
     with Database() as curs:
-        word = word.replace("'", "''").replace("`", "''")
+        word = word.replace("`", "'")
         if not check_word_by_user(id_tg=id_tg, word=word):
             add_word(word)
         _SQL = """insert into user_word (user_id, word_id)
                     select users.id, words.id
                     from users inner join words on
-                    words.word = '""" + word + """' and users.id_tg = """ + str(id_tg) + """ on conflict do nothing;"""
+                    words.word = $$""" + word + """$$ and users.id_tg = """ + str(id_tg) + """ on conflict do nothing;"""
         curs.execute(_SQL)
 
 def add_user(id_tg):
