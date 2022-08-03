@@ -126,10 +126,13 @@ def add_word_to_user(id_tg, word):
                     words.word = $$""" + word + """$$ and users.id_tg = """ + str(id_tg) + """ on conflict do nothing;"""
         curs.execute(_SQL)
 
-def add_user(id_tg):
+def add_user(id_tg, username=None):
     with Database() as curs:
         if not check_user(id_tg):
-            _SQL = "INSERT INTO users (id_tg) VALUES (" + str(id_tg) + ");"
+            if username:
+                _SQL = "INSERT INTO users (id_tg, username) VALUES (" + str(id_tg) + ", $$" + username + "$$ );"
+            else:
+                _SQL = "INSERT INTO users (id_tg) VALUES (" + str(id_tg) + ");"
             curs.execute(_SQL)
 
 def check_user(id_tg):

@@ -36,7 +36,7 @@ class State(StatesGroup):
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/help для списка всех комманд :)", reply_markup=menu_kb)
-    db.add_user(message.from_user.id)
+    db.add_user(id_tg=message.from_user.id, username=message.from_user.username)
 
 @dp.message_handler(regexp='Команды')
 @dp.message_handler(commands=['commands','help'])
