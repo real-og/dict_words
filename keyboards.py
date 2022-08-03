@@ -24,9 +24,11 @@ choice_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
 
 yes = KeyboardButton('Да')
 no = KeyboardButton('Нет')
+finish =KeyboardButton('Закончить')
 
 choice_kb.insert(yes)
 choice_kb.insert(no)
+choice_kb.insert(finish)
 
 
 big_start_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)

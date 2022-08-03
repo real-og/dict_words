@@ -5,7 +5,7 @@ from keyboards import menu_kb, choice_kb, big_start_kb
 
 from LyricsParser import LyricsParser
 
-
+import converter
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.dispatcher import FSMContext
@@ -45,16 +45,20 @@ async def send_commands(message: types.Message):
 
 
 @dp.message_handler(regexp='Добавить трек')
-@dp.message_handler(commands=['add_song'])
+@dp.message_handler(commands=['add_track'])
 async def add_song(message: types.Message):
-    await message.answer("Введите сcылку на Genius:")
+    await message.answer("Введите исполнителя и название трека через пробел без знаков препинания и апострофов '.\nЕсли это совместка, только основного исполнителя.\nЕсли возникли проблемы, введите сcылку на трек на Genius.com:")
     await State.add_t.set()
 
 @dp.message_handler(state=State.add_t)
 async def add_track(message: types.Message, state: FSMContext):
-    url = message.text.lower()
+    url = converter.create_url(message.text.lower())
     words = LyricsParser(url).get_word_list()
-    await message.answer("Всего в треке " + str(len(words)) + " слов.")
+    if not len(words):
+        await message.answer("Не смог найти трек ((\nПроверь данные...", reply_markup=menu_kb)
+        await state.finish()
+        return
+    await message.answer("Всего в треке найдено " + str(len(words)) + " слов.\nИдёт добавление, ждём...")
     new_words = ''
     new_count = 0
     for word in words:
@@ -62,8 +66,11 @@ async def add_track(message: types.Message, state: FSMContext):
             new_count += 1
             new_words += word + '\n'
             db.add_word_to_user(word=word, id_tg=message.from_user.id)
-    await message.answer("Добавлено " + str(new_count) + " слов.")
-    await message.answer('Вот они:\n' + new_words, reply_markup=menu_kb)
+    if new_count:
+        await message.answer("Добавлено " + str(new_count) + " новых слов.")
+        await message.answer('Вот они:\n' + new_words, reply_markup=menu_kb)
+    else:
+        await message.answer('Все слова знакомы', reply_markup=menu_kb)
     await state.finish()
 
 
@@ -103,14 +110,19 @@ async def execute_command(message: types.Message, state: FSMContext):
 @dp.message_handler(regexp='Проверить трек')
 @dp.message_handler(commands=['check_song'])
 async def add_song(message: types.Message):
-    await message.answer("Введите сcылку на Genius:")
+    await message.answer("Введите исполнителя затем название трека, разделяя все слова пробелом без знаков препинания и апострофов '.\nЛибо введите ссылку на трек на Genius.com")
     await State.check_t.set()
 
 @dp.message_handler(state=State.check_t)
 async def check_track(message: types.Message, state: FSMContext):
-    url = message.text.lower()
+    await message.answer("Чуть-чуть подождите...")
+    url = converter.create_url(message.text.lower())
     words = LyricsParser(url).get_word_list()
-    await message.answer("Всего в треке " + str(len(words)) + " слов.")
+    if not len(words):
+        await message.answer("Не смог найти трек ((\nПроверь данные...", reply_markup=menu_kb)
+        await state.finish()
+        return
+    await message.answer("Всего в треке " + str(len(words)) + " слов.\n")
     new_words = list()
     for word in words:
         if not db.check_word_by_user(word=word, id_tg=message.from_user.id) and (word not in new_words):
@@ -118,6 +130,7 @@ async def check_track(message: types.Message, state: FSMContext):
     if len(new_words) == 0:
         await message.answer("В этом треке все слова знакомы", reply_markup=menu_kb)
         await state.finish()
+        return
     await message.answer("Из них незнакомых " + str(len(new_words)) + "\nНажмите Начать, чтобы начать добавление по слову\nДа - знаю\nНет - не знаю.", reply_markup=big_start_kb)
     await state.update_data(words_to_check=new_words)
     await state.update_data(iter=0)
@@ -131,7 +144,7 @@ async def check_(message: types.Message, state: FSMContext):
     new_words = data['words_to_check']
     to_learn_words = data['words_to_learn']
     
-    if message.text.lower() == 'начать':
+    if message.text.lower() == 'начать' or message.text.lower() == 'закончить':
         pass
     elif message.text.lower() == 'да':
         db.add_word_to_user(word=new_words[i-1], id_tg=message.from_user.id)
@@ -142,13 +155,13 @@ async def check_(message: types.Message, state: FSMContext):
         await state.finish()
         return
 
-    if i < len(new_words):
-        await message.answer(new_words[i], reply_markup=choice_kb)
-        i += 1
-    else:
+    if i >= len(new_words) or message.text.lower() == 'закончить':
         await message.answer('Проверка окончена, слова которые нужно выучить:\n' + str(to_learn_words), reply_markup=menu_kb)
         await state.finish()
         return
+    else:
+        await message.answer(new_words[i], reply_markup=choice_kb)
+        i += 1
     await state.update_data(words_to_learn=to_learn_words, iter=i)
 
 
