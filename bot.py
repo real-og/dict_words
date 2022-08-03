@@ -156,7 +156,10 @@ async def check_(message: types.Message, state: FSMContext):
         return
 
     if i >= len(new_words) or message.text.lower() == 'закончить':
-        await message.answer('Проверка окончена, слова которые нужно выучить:\n' + str(to_learn_words), reply_markup=menu_kb)
+        if len(to_learn_words):
+            await message.answer('Проверка окончена, слова которые нужно выучить:\n' + str(to_learn_words), reply_markup=menu_kb)
+        else:
+            await message.answer('Молодчина! Всё было знакомо!', reply_markup=menu_kb)
         await state.finish()
         return
     else:
@@ -169,6 +172,10 @@ async def check_(message: types.Message, state: FSMContext):
 @dp.message_handler(commands=['count'])
 async def count(message: types.Message, state: FSMContext):
     await message.answer("В базе " + str(db.get_words_count_by_user(id_tg=message.from_user.id)) + " слов.", reply_markup=menu_kb)
+
+@dp.message_handler()
+async def default_handler(message: types.Message, state: FSMContext):
+    await message.answer('oopppssy...\nЯ понимаю только команды /help', reply_markup=menu_kb)
 
 
 if __name__ == '__main__':
