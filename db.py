@@ -78,6 +78,16 @@ def add_word(word):
 
 
 
+def delete_word_by_user(id_tg, word):
+    with Database() as curs:
+        word = word.replace("'", "''").replace("`", "''")
+        _SQL = """delete from user_word
+                    where user_id = (select id from users where id_tg = """+str(id_tg)+""")
+                    and word_id = (select id from words where word = '"""+word+"""');"""
+        curs.execute(_SQL)
+
+
+
 
 
 
