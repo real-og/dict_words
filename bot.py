@@ -196,7 +196,8 @@ async def check_(message: types.Message, state: FSMContext):
         begin_i = max(0, all_words.index(new_words[i]) - 4)
         end_i = min(len(all_words) - 1, all_words.index(new_words[i]) + 5)
         words_to_print = all_words[begin_i:end_i]
-        await message.answer(' '.join(words_to_print), reply_markup=choice_kb)
+        words_to_print[words_to_print.index(new_words[i])] = '*' + new_words[i] + '*'
+        await message.answer('...' + ' '.join(words_to_print) + '...', reply_markup=choice_kb, parse_mode='Markdown')
     elif i < len(new_words):
         await message.answer(new_words[i], reply_markup=choice_kb)
     
