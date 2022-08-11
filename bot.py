@@ -167,6 +167,11 @@ async def check_(message: types.Message, state: FSMContext):
         i += 1
     await state.update_data(words_to_learn=to_learn_words, iter=i)
 
+@dp.message_handler(regexp='Список')
+@dp.message_handler(commands=['get_words'])
+async def get_words(message: types.Message, state: FSMContext):
+    await message.answer("Секунду ... находим всё, что вы выучили ...")
+
 
 @dp.message_handler(regexp='Количество слов')
 @dp.message_handler(commands=['count'])
