@@ -169,8 +169,15 @@ async def check_(message: types.Message, state: FSMContext):
 
 @dp.message_handler(regexp='Список')
 @dp.message_handler(commands=['get_words'])
-async def get_words(message: types.Message, state: FSMContext):
+async def get_words(message: types.Message):
+    id_td = message.from_user.id
     await message.answer("Секунду ... находим всё, что вы выучили ...")
+    f = open(str(id_td) + '.html', 'w')
+    f.write('<br>'.join(db.get_words_by_user(id_td)))
+    f.close()
+    f = open(str(id_td) + '.html', 'rb')
+    await message.answer_document(document=f, reply_markup=menu_kb)
+    f.close()
 
 
 @dp.message_handler(regexp='Количество слов')
