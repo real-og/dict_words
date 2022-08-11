@@ -19,13 +19,13 @@ class LyricsParser:
     def get_word_list(self):
         words = list()
         for block in self.lyrics_blocks:
-            words = words + re.findall('[’a-zа-яё\'-]+', block.get_text('\n').lower())
+            words = words + re.findall('[’a-z$\'-]+', block.get_text('\n').lower())
         return words
 
-    def get_word_set(self):
-        uniq_words = set()
-        for block in self.lyrics_blocks:
-            uniq_words |= set(re.findall('[’a-zа-яё\']+', block.get_text('\n').lower()))
+    # def get_word_set(self):
+    #     uniq_words = set()
+    #     for block in self.lyrics_blocks:
+    #         uniq_words |= set(re.findall('[’a-z$\']+', block.get_text('\n').lower()))
 
 # url = 'https://genius.com/Kendrick-lamar-dna-lyrics'
 # url = 'https://genius.com/Slowthai-adhd-lyrics'
