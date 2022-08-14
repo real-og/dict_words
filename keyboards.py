@@ -42,3 +42,18 @@ big_start_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 start = KeyboardButton('Начать')
 
 big_start_kb.insert(start)
+
+
+choose_lvl_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+
+a1 = KeyboardButton('A1')
+a2 = KeyboardButton('A2')
+b1 = KeyboardButton('B1')
+b2 = KeyboardButton('B2')
+c1 = KeyboardButton('C1')
+
+choose_lvl_kb.insert(a1)
+choose_lvl_kb.insert(a2)
+choose_lvl_kb.insert(b1)
+choose_lvl_kb.insert(b2)
+choose_lvl_kb.insert(c1)

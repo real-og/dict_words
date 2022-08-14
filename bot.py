@@ -1,7 +1,7 @@
 import os
 import logging
 
-from keyboards import menu_kb, choice_kb, big_start_kb
+from keyboards import *
 
 from LyricsParser import LyricsParser
 
@@ -12,6 +12,8 @@ from aiogram.dispatcher import FSMContext
 
 from aiogram import Bot, Dispatcher, executor, types
 import db
+
+import initializer
 
 API_TOKEN = str(os.environ.get('BOT_TOKEN'))
 
@@ -32,12 +34,36 @@ class State(StatesGroup):
     check_w = State()
     checking = State()
     delete_w = State()
+    choose_lvl = State()
 
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.reply("Привет!\nЯ помогаю следить за словарным запасом\n/help для списка всех команд :)", reply_markup=menu_kb)
+    await message.reply("""*Привет!*\nЯ помогаю следить за словарным запасом\n
+Для начала давай определим начальный набор слов, который добавим тебе в словарь! Выбирай свой примерный уровень:\n
+Начальный - А1, A2
+Средний - B1, B2
+Продвинутый - С1\n
+_вводи_ /help _для списка всех команд_""", reply_markup=choose_lvl_kb, parse_mode='Markdown')
     db.add_user(id_tg=message.from_user.id, username=message.from_user.username)
+    await State.choose_lvl.set()
+
+@dp.message_handler(state=State.choose_lvl)
+async def add_track(message: types.Message, state: FSMContext):
+    sum = 0
+    if message.text.lower() in ('a1', 'a2', 'b1', 'b2', 'c1'):
+        sum = initializer.init_user(id_tg=message.from_user.id, filename=message.text.lower() + '.txt')
+        await message.answer('В словарь добавлено *' + str(sum) + '* слов.\nВы в меню.',
+                            parse_mode='Markdown',
+                            reply_markup=menu_kb)
+        await state.finish()
+    elif message.text.lower() == 'меню':
+        await message.answer('Вы в меню!\nИспользуй кнопки\n/help - помощь', reply_markup=menu_kb)
+        await state.finish()
+    else: 
+        await message.answer('Такого варианта нет. Нажмите меню, чтобы пропустить инициализацию или выберите свой уровень.',
+                            reply_markup=choose_lvl_kb)
+    
 
 @dp.message_handler(regexp='Команды')
 @dp.message_handler(commands=['commands','help'])
@@ -76,7 +102,7 @@ async def add_track(message: types.Message, state: FSMContext):
             new_words += word + '\n'
             db.add_word_to_user(word=word, id_tg=message.from_user.id)
     if new_count:
-        await message.answer("Добавлено " + str(new_count) + " новых слов.")
+        await message.answer("Добавлено *" + str(new_count) + "* новых слов.", parse_mode='Markdown')
         await message.answer('Вот они:\n' + new_words, reply_markup=menu_kb)
     else:
         await message.answer('Все слова знакомы', reply_markup=menu_kb)
@@ -157,7 +183,9 @@ async def check_track(message: types.Message, state: FSMContext):
         await message.answer("В этом треке все слова знакомы", reply_markup=menu_kb)
         await state.finish()
         return
-    await message.answer("Из них незнакомых " + str(len(new_words)) + "\nНажмите Начать, чтобы начать добавление по слову\nДа - знаю\nНет - не знаю.", reply_markup=big_start_kb)
+    await message.answer("Из них незнакомых *" + str(len(new_words)) + "*\nНажмите Начать, чтобы начать добавление по слову\nДа - знаю\nНет - не знаю.",
+                         reply_markup=big_start_kb,
+                         parse_mode='Markdown')
     await State.checking.set()
     await state.update_data(words_to_check=new_words)
     await state.update_data(iter=0)
