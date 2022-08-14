@@ -53,7 +53,7 @@ async def add_track(message: types.Message, state: FSMContext):
     sum = 0
     if message.text.lower() in ('a1', 'a2', 'b1', 'b2', 'c1'):
         sum = initializer.init_user(id_tg=message.from_user.id, filename=message.text.lower() + '.txt')
-        await message.answer('В словарь добавлено *' + str(sum) + '* слов.\nВы в меню.',
+        await message.answer('В словарь добавлено *' + str(sum) + '* слов.\nТы в меню. Используй кнопки.\n\n/help _для помощи_',
                             parse_mode='Markdown',
                             reply_markup=menu_kb)
         await state.finish()
