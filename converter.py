@@ -6,3 +6,4 @@ def create_url(input):
     for word in input.capitalize().split(' '):
         url = url + word + '-'
     return url + 'lyrics'
+

@@ -20,13 +20,12 @@ class Database(object):
         self.conn.commit()
         self.conn.close()
 
-
+# WORDS IN GENERAL
 def get_all_words():
     with Database() as curs:
         _SQL = """SELECT word FROM words ORDER BY word;"""
         curs.execute(_SQL)
         return curs.fetchall()
-
 
 def get_words_count():
     with Database() as curs:
@@ -34,25 +33,22 @@ def get_words_count():
         curs.execute(_SQL)
         return curs.fetchall()[0][0]
 
-
-
 def add_words(words):
+# Too slow
+#   for word in words:
+#       add_word(word)
     with Database() as curs:
         _SQL = """INSERT INTO words (word) VALUES"""
         for word in words:
-            word = word.replace("`", "'")
+            word = word.replace("`", "'").replace("’", "'")
             _SQL = _SQL + " ($$" + word + "$$), "
         _SQL = _SQL[:-2] + ' ON CONFLICT (word) DO NOTHING;'
         curs.execute(_SQL)
 
-# Too slow
-# def add_words(words):
-#     for word in words:
-#         add_word(word)
 
-
+# A WORD IN GENERAL
 def check_word(word):
-    word = word.replace("`", "'")
+    word = word.replace("`", "'").replace("’", "'")
     with Database() as curs:
         _SQL = "SELECT word FROM words WHERE word = $$" + word + "$$;"
         curs.execute(_SQL)
@@ -60,37 +56,23 @@ def check_word(word):
             return False
         return True
 
-
 def add_word(word):
     with Database() as curs:
-        word = word.replace("`", "'")
+        word = word.replace("`", "'").replace("’", "'")
         _SQL = "INSERT INTO words (word) VALUES ($$" + word + "$$) ON CONFLICT (word) DO NOTHING;"
         curs.execute(_SQL)
 
 
-
-
-
-
-
-
-
-
-
-
-def delete_word_by_user(id_tg, word):
+# WORDS CONNECTED TO THE USER
+def get_words_by_user(id_tg):
     with Database() as curs:
-        word = word.replace("`", "'")
-        _SQL = """delete from user_word
-                    where user_id = (select id from users where id_tg = """ + str(id_tg) + """)
-                    and word_id = (select id from words where word = $$""" + word + """$$);"""
+        _SQL = """select word
+                    from user_word inner join words
+                    on user_word.user_id = (select id from users where id_tg = """ + str(id_tg) + """) and
+                    user_word.word_id = words.id order by word;"""
         curs.execute(_SQL)
-
-
-
-
-
-
+        return [tupl[0] for tupl in curs.fetchall()]
+        #return curs.fetchall()
 
 def get_words_count_by_user(id_tg):
     with Database() as curs:
@@ -101,12 +83,18 @@ def get_words_count_by_user(id_tg):
         return curs.fetchall()[0][0]
 
 
-
-
+# A WORD CONNECTED TO THE USER
+def delete_word_by_user(id_tg, word):
+    with Database() as curs:
+        word = word.replace("`", "'").replace("’", "'")
+        _SQL = """delete from user_word
+                    where user_id = (select id from users where id_tg = """ + str(id_tg) + """)
+                    and word_id = (select id from words where word = $$""" + word + """$$);"""
+        curs.execute(_SQL)
 
 def check_word_by_user(id_tg, word):
     with Database() as curs:
-        word = word.replace("`", "'")
+        word = word.replace("`", "'").replace("’", "'")
         _SQL = """select * from user_word
                     where user_id = (select id from users where id_tg = """ + str(id_tg) + """)
                     and word_id = (select id from words where word = $$""" + word + """$$);"""
@@ -117,7 +105,7 @@ def check_word_by_user(id_tg, word):
 
 def add_word_to_user(id_tg, word):
     with Database() as curs:
-        word = word.replace("`", "'")
+        word = word.replace("`", "'").replace("’", "'")
         if not check_word_by_user(id_tg=id_tg, word=word):
             add_word(word)
         _SQL = """insert into user_word (user_id, word_id)
@@ -126,6 +114,8 @@ def add_word_to_user(id_tg, word):
                     words.word = $$""" + word + """$$ and users.id_tg = """ + str(id_tg) + """ on conflict do nothing;"""
         curs.execute(_SQL)
 
+
+# USERS
 def add_user(id_tg, username=None):
     with Database() as curs:
         if not check_user(id_tg):
@@ -142,3 +132,4 @@ def check_user(id_tg):
         if len(curs.fetchall()) == 0:
             return False
         return True
+
