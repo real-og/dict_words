@@ -82,6 +82,17 @@ def get_words_count_by_user(id_tg):
         curs.execute(_SQL)
         return curs.fetchall()[0][0]
 
+def add_words_to_user(id_tg, words):
+    with Database() as curs:
+        dbid = str(get_user_dbid(id_tg))
+        add_words(words)
+        _SQL = """INSERT INTO user_word(user_id, word_id) values """
+        for word in words:
+            word = word.replace("`", "'").replace("’", "'")
+            _SQL = _SQL + "(" + dbid + ", (select id from words where word =$$" + word + "$$)), "
+        _SQL = _SQL[:-2] + ' ON CONFLICT DO NOTHING;'
+        curs.execute(_SQL)
+
 
 # A WORD CONNECTED TO THE USER
 def delete_word_by_user(id_tg, word):
@@ -116,6 +127,15 @@ def add_word_to_user(id_tg, word):
 
 
 # USERS
+def get_user_dbid(id_tg):
+    with Database() as curs:
+        _SQL = "SELECT id FROM users WHERE id_tg = " + str(id_tg) + ";"
+        curs.execute(_SQL)
+        res = curs.fetchall()
+        if len(res) == 0:
+            return None
+        return res[0][0]
+
 def add_user(id_tg, username=None):
     with Database() as curs:
         if not check_user(id_tg):

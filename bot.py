@@ -86,7 +86,7 @@ async def send_commands(message: types.Message):
 
 
 @dp.message_handler(regexp='Добавить трек')
-@dp.message_handler(commands=['add_track'])
+@dp.message_handler(commands=['add_song'])
 async def add_song(message: types.Message):
     await message.answer("Введите исполнителя и название трека через пробел без знаков препинания и апострофов '.\nЕсли это совместка, только основного исполнителя.\nЕсли возникли проблемы, введите сcылку на трек на Genius.com:")
     await State.add_t.set()
