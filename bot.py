@@ -44,7 +44,8 @@ class State(StatesGroup):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.reply("""*Привет!*\nЯ помогаю следить за словарным запасом\n
+    await message.answer_sticker(r'CAACAgIAAxkBAAEFkCpi-gSytYxF_YgXZT5CCnqz218lEQACzBkAAl4F0UvjaucGIq3RAykE')
+    await message.answer("""Я помогаю следить за словарным запасом\n
 Для начала давай определим начальный набор слов, который добавим тебе в словарь! Выбирай свой примерный уровень:\n
 Начальный - А1, A2
 Средний - B1, B2
