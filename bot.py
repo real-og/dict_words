@@ -15,9 +15,10 @@ import db
 
 import initializer
 
-from translate import Translator
+from deep_translator import GoogleTranslator
 
-translator = Translator(to_lang='ru', from_lang='en')
+
+translator = GoogleTranslator(source='en', target='ru')
 
 API_TOKEN = str(os.environ.get('BOT_TOKEN'))
 
@@ -56,7 +57,7 @@ _вводи_ /help _для списка всех команд_""", reply_markup=
 async def add_track(message: types.Message, state: FSMContext):
     sum = 0
     if message.text.lower() in ('a1', 'a2', 'b1', 'b2', 'c1'):
-        sum = initializer.init_user(id_tg=message.from_user.id, filename=message.text.lower() + '.txt')
+        sum = initializer.init_user_dict(id_tg=message.from_user.id, filename=message.text.lower() + '.txt')
         await message.answer('В словарь добавлено *' + str(sum) + '* слов.\nТы в меню. Используй кнопки.\n\n/help _для помощи_',
                             parse_mode='Markdown',
                             reply_markup=menu_kb)
@@ -163,27 +164,6 @@ async def execute_command(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @dp.message_handler(regexp='Проверить трек')
 @dp.message_handler(commands=['check_song'])
 async def add_song(message: types.Message):
@@ -257,36 +237,6 @@ async def check_(message: types.Message, state: FSMContext):
         await message.answer(new_words[i], reply_markup=choice_kb)
     
     await state.update_data(words_to_learn=to_learn_words, iter=i)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @dp.message_handler(regexp='Список')
