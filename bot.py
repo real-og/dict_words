@@ -1,7 +1,7 @@
 import os
 import logging
 
-from keyboards import *
+from keyboards import menu_kb, choice_kb, choose_lvl_kb, big_start_kb
 
 from LyricsParser import LyricsParser
 
@@ -14,6 +14,11 @@ from aiogram import Bot, Dispatcher, executor, types
 import db
 
 import initializer
+
+from deep_translator import GoogleTranslator
+
+
+translator = GoogleTranslator(source='en', target='ru')
 
 API_TOKEN = str(os.environ.get('BOT_TOKEN'))
 
@@ -52,7 +57,7 @@ _вводи_ /help _для списка всех команд_""", reply_markup=
 async def add_track(message: types.Message, state: FSMContext):
     sum = 0
     if message.text.lower() in ('a1', 'a2', 'b1', 'b2', 'c1'):
-        sum = initializer.init_user(id_tg=message.from_user.id, filename=message.text.lower() + '.txt')
+        sum = initializer.init_user_dict(id_tg=message.from_user.id, filename=message.text.lower() + '.txt')
         await message.answer('В словарь добавлено *' + str(sum) + '* слов.\nТы в меню. Используй кнопки.\n\n/help _для помощи_',
                             parse_mode='Markdown',
                             reply_markup=menu_kb)
@@ -199,7 +204,7 @@ async def check_(message: types.Message, state: FSMContext):
     new_words = data['words_to_check']
     to_learn_words = data['words_to_learn']
 
-    if message.text.lower() == 'начать' or message.text.lower() == 'закончить'or message.text.lower() == 'контекст':
+    if message.text.lower() == 'начать' or message.text.lower() == 'закончить'or message.text.lower() == 'контекст'or message.text.lower() == 'перевод':
         pass
     elif message.text.lower() == 'да':
         db.add_word_to_user(word=new_words[i], id_tg=message.from_user.id)
@@ -226,10 +231,13 @@ async def check_(message: types.Message, state: FSMContext):
         words_to_print = all_words[begin_i:end_i]
         words_to_print[words_to_print.index(new_words[i])] = '_ *' + new_words[i] + '* _'
         await message.answer('..._' + ' '.join(words_to_print) + '_...', reply_markup=choice_kb, parse_mode='Markdown')
+    elif message.text.lower() == 'перевод':
+        await message.answer('_Возможный перевод:_\n*' + translator.translate(new_words[i]) + '*', reply_markup=choice_kb, parse_mode='Markdown')
     elif i < len(new_words):
         await message.answer(new_words[i], reply_markup=choice_kb)
     
     await state.update_data(words_to_learn=to_learn_words, iter=i)
+
 
 @dp.message_handler(regexp='Список')
 @dp.message_handler(commands=['list'])
