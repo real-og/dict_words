@@ -245,10 +245,10 @@ async def check_(message: types.Message, state: FSMContext):
 async def get_words(message: types.Message):
     id_td = message.from_user.id
     await message.answer("Секунду ... находим всё, что вы выучили ...")
-    f = open('words_' + str(id_td) + '.html', 'w')
+    f = open('generated_for_users/words_' + str(id_td) + '.html', 'w')
     f.write('<br>'.join(db.get_words_by_user(id_td)))
     f.close()
-    f = open('words_' + str(id_td) + '.html', 'rb')
+    f = open('generated_for_users/words_' + str(id_td) + '.html', 'rb')
     await message.answer_document(document=f, reply_markup=menu_kb)
     f.close()
 
