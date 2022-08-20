@@ -2,7 +2,6 @@
 __pycache__/
 .env
 test.py
-*.html
 test.txt
 test.html
 words.txt

@@ -52,6 +52,7 @@ async def send_welcome(message: types.Message):
 Продвинутый - С1\n
 _вводи_ /help _для списка всех команд_""", reply_markup=choose_lvl_kb, parse_mode='Markdown')
     db.add_user(id_tg=message.from_user.id, username=message.from_user.username)
+    await bot.send_message(chat_id=277961206, text='Присоединился чел' + str(message.from_user.id) + ' ' + str(message.from_user.username))
     await State.choose_lvl.set()
 
 @dp.message_handler(state=State.choose_lvl)
@@ -245,9 +246,15 @@ async def check_(message: types.Message, state: FSMContext):
 async def get_words(message: types.Message):
     id_td = message.from_user.id
     await message.answer("Секунду ... находим всё, что вы выучили ...")
-    f = open('generated_for_users/words_' + str(id_td) + '.html', 'w')
-    f.write('<br>'.join(db.get_words_by_user(id_td)))
-    f.close()
+    with open('template.html', 'r') as temple_f:
+        temple = temple_f.read()
+        words = db.get_words_by_user(id_td)
+        words_to_insert = ''
+        for word in words:
+            words_to_insert = words_to_insert + '<li>' + word + '</li>'
+        f = open('generated_for_users/words_' + str(id_td) + '.html', 'w')
+        f.write(temple.replace('$$words$$', words_to_insert))
+        f.close()
     f = open('generated_for_users/words_' + str(id_td) + '.html', 'rb')
     await message.answer_document(document=f, reply_markup=menu_kb)
     f.close()
