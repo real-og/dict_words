@@ -212,6 +212,7 @@ async def check_(message: types.Message, state: FSMContext):
         db.add_word_to_user(word=new_words[i], id_tg=message.from_user.id)
         i += 1
     elif message.text.lower() == 'нет':
+        db.add_word_to_user(word=new_words[i], id_tg=message.from_user.id, table='user_word_learn')
         to_learn_words.append(new_words[i])
         i += 1
     else:
@@ -249,11 +250,15 @@ async def get_words(message: types.Message):
     with open('template.html', 'r') as temple_f:
         temple = temple_f.read()
         words = db.get_words_by_user(id_td)
+        unknown = db.get_words_by_user(id_tg=id_td, table='user_word_learn')
         words_to_insert = ''
         for word in words:
             words_to_insert = words_to_insert + '<li>' + word + '</li>'
+        unknown_to_insert = ''
+        for word in unknown:
+            unknown_to_insert = unknown_to_insert + '<li>' + word + '</li>'
         f = open('generated_for_users/words_' + str(id_td) + '.html', 'w')
-        f.write(temple.replace('$$words$$', words_to_insert))
+        f.write(temple.replace('$$words$$', words_to_insert).replace('$$words_unknown$$', unknown_to_insert))
         f.close()
     f = open('generated_for_users/words_' + str(id_td) + '.html', 'rb')
     await message.answer_document(document=f, reply_markup=menu_kb)
