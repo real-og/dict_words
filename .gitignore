@@ -7,3 +7,5 @@ test.html
 words.txt
 sample.log
 generated_for_users/
+Pipfile
+Pipfile.lock
