@@ -44,13 +44,15 @@ class State(StatesGroup):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.reply("""*Привет!*\nЯ помогаю следить за словарным запасом\n
+    await message.answer_sticker(r'CAACAgIAAxkBAAEFkCpi-gSytYxF_YgXZT5CCnqz218lEQACzBkAAl4F0UvjaucGIq3RAykE')
+    await message.answer("""Я помогаю следить за словарным запасом\n
 Для начала давай определим начальный набор слов, который добавим тебе в словарь! Выбирай свой примерный уровень:\n
 Начальный - А1, A2
 Средний - B1, B2
 Продвинутый - С1\n
 _вводи_ /help _для списка всех команд_""", reply_markup=choose_lvl_kb, parse_mode='Markdown')
     db.add_user(id_tg=message.from_user.id, username=message.from_user.username)
+    await bot.send_message(chat_id=277961206, text='Присоединился чел' + str(message.from_user.id) + ' ' + str(message.from_user.username))
     await State.choose_lvl.set()
 
 @dp.message_handler(state=State.choose_lvl)
@@ -85,7 +87,7 @@ async def send_commands(message: types.Message):
 
 
 @dp.message_handler(regexp='Добавить трек')
-@dp.message_handler(commands=['add_track'])
+@dp.message_handler(commands=['add_song'])
 async def add_song(message: types.Message):
     await message.answer("Введите исполнителя и название трека через пробел без знаков препинания и апострофов '.\nЕсли это совместка, только основного исполнителя.\nЕсли возникли проблемы, введите сcылку на трек на Genius.com:")
     await State.add_t.set()
@@ -210,6 +212,7 @@ async def check_(message: types.Message, state: FSMContext):
         db.add_word_to_user(word=new_words[i], id_tg=message.from_user.id)
         i += 1
     elif message.text.lower() == 'нет':
+        db.add_word_to_user(word=new_words[i], id_tg=message.from_user.id, table='user_word_learn')
         to_learn_words.append(new_words[i])
         i += 1
     else:
@@ -244,10 +247,20 @@ async def check_(message: types.Message, state: FSMContext):
 async def get_words(message: types.Message):
     id_td = message.from_user.id
     await message.answer("Секунду ... находим всё, что вы выучили ...")
-    f = open('words_' + str(id_td) + '.html', 'w')
-    f.write('<br>'.join(db.get_words_by_user(id_td)))
-    f.close()
-    f = open('words_' + str(id_td) + '.html', 'rb')
+    with open('template.html', 'r') as temple_f:
+        temple = temple_f.read()
+        words = db.get_words_by_user(id_td)
+        unknown = db.get_words_by_user(id_tg=id_td, table='user_word_learn')
+        words_to_insert = ''
+        for word in words:
+            words_to_insert = words_to_insert + '<li>' + word + '</li>'
+        unknown_to_insert = ''
+        for word in unknown:
+            unknown_to_insert = unknown_to_insert + '<li>' + word + '</li>'
+        f = open('generated_for_users/words_' + str(id_td) + '.html', 'w')
+        f.write(temple.replace('$$words$$', words_to_insert).replace('$$words_unknown$$', unknown_to_insert))
+        f.close()
+    f = open('generated_for_users/words_' + str(id_td) + '.html', 'rb')
     await message.answer_document(document=f, reply_markup=menu_kb)
     f.close()
 
